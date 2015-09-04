@@ -9,7 +9,7 @@ Puppet::Type.newtype(:rbac_user) do
     end
   end
   newproperty(:id) do
-    desc 'The ID of the group'
+    desc 'The ID of the group (read-only)'
     validate do |value|
       fail("ID is read-only")
     end
@@ -19,11 +19,19 @@ Puppet::Type.newtype(:rbac_user) do
     validate do |value|
       fail("#{email} is not a email address") unless value =~ /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
     end
+
+    def insync?(is)
+      return true if provider.exists?
+    end
   end
   newparam(:display_name) do
     desc 'This is the string name for the rbac user'
     validate do |value|
       fail("#{name} is not a valid group name") unless value =~ /^[a-zA-Z0-9\-\_'\s]+$/
+    end
+
+    def insync?(is)
+      return true if provider.exists?
     end
   end
   newproperty(:password) do
@@ -31,23 +39,32 @@ Puppet::Type.newtype(:rbac_user) do
     validate do |value|
       fail("#{name} is not a valid group name") unless value =~ /^[a-zA-Z0-9\-\_'\s]+$/
     end
+
+    def insync?(is)
+      return true if provider.exists?
+    end
   end
   newproperty(:remote) do
     desc ''
     newvalues(:false, :true)
     defaultto :false
+
+    def insync?(is)
+      return true if provider.exists?
+    end
   end
   newproperty(:superuser) do
     desc ''
     newvalues(:false, :true)
     defaultto :false
+
+    def insync?(is)
+      return true if provider.exists?
+    end
   end
   newproperty(:is_revoked) do
-    desc 'If the user needs a password reset token (read-only)'
+    desc 'If the user needs a password reset token'
     newvalues(:false, :true)
-    validate do |value|
-      fail("Is_revoked is read-only")
-    end
   end
   newproperty(:last_login) do
     desc 'Indicating when the user last logged in (read-only)'
@@ -56,10 +73,7 @@ Puppet::Type.newtype(:rbac_user) do
     end
   end
   newproperty(:role_ids) do
-    desc 'An array of role IDs indicating which roles a remote user inherits from their groups (read-only)'
-    validate do |value|
-      fail("Inherited_role_ids is read-only")
-    end
+    desc 'An array of role IDs indicating which roles a remote user inherits from their groups'
     defaultto []
   end
   newproperty(:group_ids) do
